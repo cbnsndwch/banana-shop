@@ -1,0 +1,47 @@
+{
+	// EmDash site on Cloudflare Workers (D1 + R2).
+	// `name` is also the Worker name. Provision D1/R2 and fill `database_id` below.
+	"name": "hack-night-demo",
+	"main": "./src/worker.ts",
+	"account_id": "2762e11135a6c3145300ccb70c44ae81",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+
+	// Astro Cloudflare build output (server + assets).
+	"assets": { "directory": "./dist" },
+
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "hack-night-demo",
+			"database_id": "4a7cd22c-2503-4cdb-a5f3-3ff6cee473ca"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "hack-night-demo-media"
+		}
+	],
+
+	// Scheduled publishing + maintenance sweep (1/min).
+	"triggers": { "crons": ["* * * * *"] },
+
+	// Worker Loader binding — runs the sandboxed catalog-manager plugin in an
+	// isolated isolate. Requires a Workers paid plan.
+	"worker_loaders": [{ "binding": "LOADER" }],
+
+	// Main branch deploys to the account's workers.dev subdomain.
+	// Switch to a custom hostname later by adding a "custom_domains" entry on a zone
+	// the cbnsndwch account owns, e.g. "custom_domains": ["hack-night.cbnsndwch.dev"].
+	"workers_dev": true,
+
+	// Preview environment for non-main branches: random *.workers.dev subdomain per branch.
+	"env": {
+		"preview": {
+			"name": "hack-night-demo-preview",
+			"workers_dev": true,
+			"worker_loaders": [{ "binding": "LOADER" }]
+		}
+	}
+}

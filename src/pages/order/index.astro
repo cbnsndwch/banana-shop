@@ -1,0 +1,211 @@
+---
+import { getEmDashCollection, getEmDashEntry } from "emdash";
+import Base from "../../layouts/Base.astro";
+
+const { entries: products, cacheHint } = await getEmDashCollection("products", {
+	status: "published",
+	where: { available: true },
+	orderBy: { title: "asc" },
+	limit: 100,
+});
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+// Pre-fill from ?product=<slug> (the "Add to order" links).
+const prefillSlug = Astro.url.searchParams.get("product");
+let prefill: { slug: string; price: number } | null = null;
+if (prefillSlug) {
+	const { entry } = await getEmDashEntry("products", prefillSlug);
+	if (entry && entry.data.price != null) prefill = { slug: entry.id, price: entry.data.price };
+}
+---
+
+<Base title="Order" description="Build your order for cash-on-pickup.">
+	<h1>Place an order</h1>
+	<p class="lede">Add what you'd like, choose a pickup time and place, and we'll have it ready. Pay cash when you pick up.</p>
+
+	<form id="order-form" class="order-form" novalidate>
+		<fieldset>
+			<legend>Your details</legend>
+			<label>Name <input name="customer_name" required autocomplete="name" /></label>
+			<label>Phone <input name="customer_phone" type="tel" autocomplete="tel" /></label>
+			<label>Email (optional) <input name="customer_email" type="email" autocomplete="email" /></label>
+			<label>Name for pickup (optional) <input name="pickup_name" placeholder="if someone else collects" /></label>
+		</fieldset>
+
+		<fieldset>
+			<legend>Items</legend>
+			<table class="items">
+				<thead>
+					<tr><th>Product</th><th class="qty">Qty</th><th class="price">Unit</th><th class="line">Line</th><th></th></tr>
+				</thead>
+				<tbody id="items-body"></tbody>
+				<tfoot>
+					<tr><td colspan="3" class="right">Total</td><td class="total" id="total">$0.00</td><td></td></tr>
+				</tfoot>
+			</table>
+			<button type="button" id="add-row" class="add-row">+ Add item</button>
+		</fieldset>
+
+		<fieldset>
+			<legend>Pickup</legend>
+			<label>Pickup date & time <input name="pickup_date" type="datetime-local" required /></label>
+			<label>Pickup location
+				<select name="pickup_location" required>
+					<option value="kitchen">The kitchen</option>
+					<option value="market-stall">Saturday market stall</option>
+				</select>
+			</label>
+		</fieldset>
+
+		<fieldset>
+			<legend>Notes</legend>
+			<label>Anything we should know? (allergies, special instructions)
+				<textarea name="notes" rows="3"></textarea>
+			</label>
+		</fieldset>
+
+		<div class="payment">
+			<strong>Payment:</strong> Cash on pickup. Bring exact change if you can.
+		</div>
+
+		<button type="submit" class="submit-btn">Place order</button>
+		<p class="form-error" id="form-error" hidden></p>
+	</form>
+</Base>
+
+<script type="application/json" id="products-data" set:html={JSON.stringify(products.map((p) => ({ slug: p.id, title: p.data.title, price: p.data.price, unit: p.data.unit })))}></script>
+<script type="application/json" id="prefill-data" set:html={JSON.stringify(prefill)}></script>
+
+<script>
+	// Inline so it survives the Cloudflare adapter without a separate client bundle path.
+	const products = JSON.parse(document.getElementById("products-data")?.textContent || "[]");
+	const prefill = JSON.parse(document.getElementById("prefill-data")?.textContent || "null");
+	const body = document.getElementById("items-body")!;
+	const totalEl = document.getElementById("total")!;
+	const fmt = (n: number) => `$${n.toFixed(2)}`;
+
+	function productOption(selected: string) {
+		return products
+			.map((p: any) => `<option value="${p.slug}" ${p.slug === selected ? "selected" : ""}>${p.title} — ${fmt(p.price)}</option>`)
+			.join("");
+	}
+
+	function moneyInput() {
+		return `<input type="text" class="unit-price" value="" readonly />`;
+	}
+
+	function lineTotal(qty: number, price: number) {
+		return fmt(qty * price);
+	}
+
+	function recalcRow(row: HTMLElement) {
+		const sel = row.querySelector<HTMLSelectElement>(".product-sel")!;
+		const p = products.find((x: any) => x.slug === sel.value);
+		const qty = Number(row.querySelector<HTMLInputElement>(".qty-input")!.value) || 0;
+		const unitEl = row.querySelector<HTMLInputElement>(".unit-price")!;
+		const lineEl = row.querySelector(".line-total")!;
+		if (p) {
+			unitEl.value = fmt(p.price);
+			lineEl.textContent = lineTotal(qty, p.price);
+		} else {
+			unitEl.value = "";
+			lineEl.textContent = "$0.00";
+		}
+		recalcTotal();
+	}
+
+	function recalcTotal() {
+		let total = 0;
+		body.querySelectorAll<HTMLElement>(".item-row").forEach((row) => {
+			const sel = row.querySelector<HTMLSelectElement>(".product-sel")!;
+			const p = products.find((x: any) => x.slug === sel.value);
+			const qty = Number(row.querySelector<HTMLInputElement>(".qty-input")!.value) || 0;
+			if (p) total += qty * p.price;
+		});
+		totalEl.textContent = fmt(total);
+	}
+
+	function addRow(selected = "") {
+		const tr = document.createElement("tr");
+		tr.className = "item-row";
+		tr.innerHTML = `
+			<td><select class="product-sel" required><option value="">— pick a product —</option>${productOption(selected)}</select></td>
+			<td class="qty"><input class="qty-input" type="number" min="1" value="1" required /></td>
+			<td class="price">${moneyInput()}</td>
+			<td class="line line-total">$0.00</td>
+			<td><button type="button" class="remove-row" aria-label="Remove">✕</button></td>`;
+		body.appendChild(tr);
+		tr.querySelector(".product-sel")!.addEventListener("change", () => recalcRow(tr));
+		tr.querySelector(".qty-input")!.addEventListener("input", () => recalcRow(tr));
+		tr.querySelector(".remove-row")!.addEventListener("click", () => { tr.remove(); recalcTotal(); });
+		if (selected) recalcRow(tr);
+	}
+
+	document.getElementById("add-row")!.addEventListener("click", () => addRow());
+	if (prefill) addRow(prefill.slug); else addRow();
+
+	const form = document.getElementById("order-form") as HTMLFormElement;
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const errEl = document.getElementById("form-error")!;
+		errEl.hidden = true;
+		const fd = new FormData(form);
+		const items = [...body.querySelectorAll<HTMLElement>(".item-row")].map((row) => {
+			const sel = row.querySelector<HTMLSelectElement>(".product-sel")!;
+			const qty = Number(row.querySelector<HTMLInputElement>(".qty-input")!.value);
+			return { product: sel.value, quantity: qty };
+		}).filter((i) => i.product && i.quantity > 0);
+
+		const payload = {
+			customer_name: fd.get("customer_name"),
+			customer_phone: fd.get("customer_phone"),
+			customer_email: fd.get("customer_email"),
+			pickup_name: fd.get("pickup_name"),
+			pickup_date: fd.get("pickup_date"),
+			pickup_location: fd.get("pickup_location"),
+			notes: fd.get("notes"),
+			items,
+		};
+		const res = await fetch("/api/orders", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payload),
+		});
+		const data = await res.json();
+		if (!res.ok || !data.ok) {
+			errEl.textContent = data.error || "Could not place the order. Please try again.";
+			errEl.hidden = false;
+			return;
+		}
+		window.location.href = `/order/confirmation/${data.id}`;
+	});
+</script>
+
+<style>
+	.order-form { max-width: 640px; }
+	fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem 1.25rem; margin: 0 0 1.25rem; }
+	legend { font-weight: 600; padding: 0 0.4rem; }
+	label { display: block; margin-bottom: 0.75rem; font-size: 0.92rem; color: var(--muted); }
+	input, select, textarea {
+		display: block; width: 100%; margin-top: 0.25rem;
+		padding: 0.5rem 0.6rem; border: 1px solid var(--border);
+		border-radius: 8px; font: inherit; background: #fff;
+	}
+	.items { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; }
+	.items th { text-align: left; font-size: 0.8rem; color: var(--muted); padding: 0.4rem; border-bottom: 1px solid var(--border); }
+	.items td { padding: 0.4rem; vertical-align: middle; }
+	.items .qty, .items .price { width: 90px; }
+	.items .line { width: 90px; text-align: right; }
+	.items .right { text-align: right; }
+	.items tfoot td { font-weight: 700; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+	.items .total { text-align: right; }
+	.remove-row { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
+	.add-row { background: var(--bg-alt); border: 1px dashed var(--border); border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; }
+	.payment { background: var(--bg-alt); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; }
+	.submit-btn {
+		background: var(--accent); color: #fff; border: none; border-radius: 999px;
+		padding: 0.7rem 1.6rem; font-size: 1rem; font-weight: 600; cursor: pointer;
+	}
+	.form-error { color: #b3261e; }
+	.lede { color: var(--muted); }
+</style>

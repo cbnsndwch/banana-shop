@@ -1,0 +1,124 @@
+---
+import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
+import { EmDashHead } from "emdash/ui";
+import { createPublicPageContext } from "emdash/page";
+
+interface Props {
+	title?: string;
+	description?: string;
+	content?: { collection: string; id: string; slug?: string | null };
+}
+
+const { title, description, content } = Astro.props;
+
+const { data: settings, cacheHint: settingsCache } = await getSiteSettingsWithCacheHint();
+const { data: menu, cacheHint: menuCache } = await getMenuWithCacheHint("primary");
+
+const siteTitle = settings?.title ?? "Hack Night Bakery";
+const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle;
+const pageDescription = description ?? settings?.tagline ?? "";
+
+const pageCtx = createPublicPageContext({
+	kind: content ? "content" : "custom",
+	title: pageTitle,
+	pageTitle: title ?? null,
+	description: pageDescription,
+	siteName: siteTitle,
+	content,
+});
+
+if (Astro.cache?.enabled) {
+	Astro.cache.set(settingsCache);
+	Astro.cache.set(menuCache);
+}
+
+const items = menu?.items ?? [];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pageTitle}</title>
+		<meta name="description" content={pageDescription} />
+		<EmDashHead context={pageCtx} />
+	</head>
+	<body>
+		<header class="site-header">
+			<a class="brand" href="/">{siteTitle}</a>
+			<nav aria-label="Primary">
+				{items.map((item) => (
+					<a href={item.url}>{item.label}</a>
+				))}
+				<a class="order-cta" href="/order">Order</a>
+			</nav>
+		</header>
+
+		<main class="site-main">
+			<slot />
+		</main>
+
+		<footer class="site-footer">
+			<p>{siteTitle} · order ahead, pay cash on pickup</p>
+			<p>
+				<a href="/_emdash/admin">Admin</a>
+			</p>
+		</footer>
+
+		<style is:global>
+			:root {
+				--fg: #1c140d;
+				--bg: #faf6ef;
+				--bg-alt: #f1e8d8;
+				--accent: #b3541f;
+				--muted: #6b5a48;
+				--border: #e3d8c4;
+				--radius: 10px;
+			}
+			* { box-sizing: border-box; }
+			html { color-scheme: light; }
+			body {
+				margin: 0;
+				font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+				color: var(--fg);
+				background: var(--bg);
+				line-height: 1.55;
+			}
+			a { color: var(--accent); text-decoration: none; }
+			a:hover { text-decoration: underline; }
+			.site-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 1rem clamp(1rem, 4vw, 3rem);
+				border-bottom: 1px solid var(--border);
+				background: var(--bg);
+				position: sticky;
+				top: 0;
+				z-index: 10;
+			}
+			.brand { font-weight: 700; font-size: 1.15rem; color: var(--fg); }
+			.site-header nav { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+			.order-cta {
+				background: var(--accent);
+				color: #fff;
+				padding: 0.4rem 0.9rem;
+				border-radius: 999px;
+				font-weight: 600;
+			}
+			.order-cta:hover { text-decoration: none; opacity: 0.92; }
+			.site-main { padding: 2rem clamp(1rem, 4vw, 3rem); max-width: 1100px; margin: 0 auto; }
+			.site-footer {
+				border-top: 1px solid var(--border);
+				padding: 1.5rem clamp(1rem, 4vw, 3rem);
+				text-align: center;
+				color: var(--muted);
+				font-size: 0.9rem;
+			}
+			.site-footer a { color: var(--muted); }
+		</style>
+	</body>
+</html>

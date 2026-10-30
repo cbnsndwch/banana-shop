@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Contact" description="Get in touch with the bakery.">
+	<h1>Contact</h1>
+	<p>Questions about an order, or want something special baked?</p>
+	<ul class="contact-list">
+		<li>Email: <a href="mailto:hello@hacknightbakery.example">hello@hacknightbakery.example</a></li>
+		<li>Phone: <a href="tel:+15551234567">(555) 123-4567</a></li>
+		<li>The kitchen: 123 Flour Lane — pickup by appointment</li>
+		<li>Saturday market stall: 8am–noon</li>
+	</ul>
+	<p class="note">The fastest way is to <a href="/order">place an order</a> — pickup details come back to you on the confirmation page.</p>
+</Base>
+
+<style>
+	.contact-list { line-height: 1.8; padding-left: 1.1rem; }
+	.note { margin-top: 1.5rem; color: var(--muted); }
+</style>

@@ -1,0 +1,76 @@
+---
+import { getEmDashCollection, getTaxonomyTermsWithCacheHint } from "emdash";
+import Base from "../../layouts/Base.astro";
+import ProductCard from "../../components/ProductCard.astro";
+
+const { data: terms, cacheHint: termCache } = await getTaxonomyTermsWithCacheHint("category");
+const { entries: products, cacheHint } = await getEmDashCollection("products", {
+	status: "published",
+	orderBy: { published_at: "desc" },
+	limit: 50,
+});
+if (Astro.cache?.enabled) {
+	Astro.cache.set(termCache);
+	Astro.cache.set(cacheHint);
+}
+
+const activeCategory = Astro.url.searchParams.get("category");
+const filtered = activeCategory
+	? products.filter((p) => (p.data.terms?.category ?? []).some((t) => t.slug === activeCategory))
+	: products;
+const byCategory = new Map<string, typeof products>();
+for (const p of filtered) {
+	const cats = p.data.terms?.category ?? [];
+	const key = cats[0]?.slug ?? "other";
+	if (!byCategory.has(key)) byCategory.set(key, []);
+	byCategory.get(key)!.push(p);
+}
+const labelFor = (slug: string) => terms.find((t) => t.slug === slug)?.label ?? slug;
+---
+
+<Base title="Menu">
+	<h1>The menu</h1>
+	<p class="lede">Everything baked in small batches. Order ahead, pick it up, pay in cash.</p>
+
+	<nav class="filters" aria-label="Categories">
+		<a href="/products" class={!activeCategory ? "active" : ""}>All</a>
+		{terms.map((t) => (
+			<a href={`/products?category=${t.slug}`} class={activeCategory === t.slug ? "active" : ""}>{t.label}</a>
+		))}
+	</nav>
+
+	{filtered.length === 0 ? (
+		<p class="empty">No products in this category yet.</p>
+	) : (
+		[...byCategory.entries()].map(([slug, items]) => (
+			<section class="cat-section">
+				<h2>{labelFor(slug)}</h2>
+				<div class="grid">
+					{items.map((p) => <ProductCard product={p} />)}
+				</div>
+			</section>
+		))
+	)}
+</Base>
+
+<style>
+	h1 { margin: 0 0 0.25rem; }
+	.lede { color: var(--muted); margin: 0 0 1.5rem; }
+	.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+	.filters a {
+		padding: 0.35rem 0.9rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		color: var(--fg);
+		font-size: 0.9rem;
+	}
+	.filters a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+	.cat-section { margin-bottom: 2.5rem; }
+	.cat-section h2 { margin: 0 0 1rem; }
+	.grid {
+		display: grid;
+		gap: 1.25rem;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	}
+	.empty { color: var(--muted); }
+</style>

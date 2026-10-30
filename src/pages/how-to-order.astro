@@ -1,0 +1,21 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="How to order" description="How ordering and cash-on-pickup works.">
+	<h1>How to order</h1>
+	<ol class="steps">
+		<li><strong>Browse the menu</strong> and hit “Add to order” on anything you like.</li>
+		<li><strong>Set your quantities</strong>, pickup time, and pickup place.</li>
+		<li><strong>Submit the order</strong> — no account, no payment online.</li>
+		<li><strong>Pay cash on pickup.</strong> We'll have everything bagged and ready.</li>
+	</ol>
+	<p class="cta"><a class="btn" href="/order">Start an order →</a></p>
+</Base>
+
+<style>
+	.steps { max-width: 40rem; line-height: 1.8; padding-left: 1.25rem; }
+	.btn { display: inline-block; padding: 0.65rem 1.4rem; border-radius: 999px; font-weight: 600; background: var(--accent); color: #fff; }
+	.btn:hover { text-decoration: none; opacity: 0.92; }
+	.cta { margin-top: 1.5rem; }
+</style>

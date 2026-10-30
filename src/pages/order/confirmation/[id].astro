@@ -1,0 +1,54 @@
+---
+import { getEmDashEntry } from "emdash";
+import Base from "../../../layouts/Base.astro";
+
+const { id } = Astro.params;
+if (!id) return Astro.rewrite("/404");
+
+const { entry: order } = await getEmDashEntry("orders", id);
+const locationLabel = order?.data.pickup_location === "market-stall" ? "Saturday market stall" : "The kitchen";
+const total = typeof order?.data.total === "number" ? order.data.total.toFixed(2) : "—";
+const items = (order?.data.items as Array<{ product: string; quantity: number; unit_price: number }> | undefined) ?? [];
+---
+
+<Base title="Order confirmed" description="Your order is in.">
+	<section class="confirm">
+		<h1>Thanks — your order is in ✅</h1>
+		{order ? (
+			<>
+				<p class="ref">Order ref: <code>{id}</code></p>
+				<table class="summary">
+					<tbody>
+						<tr><th>Name</th><td>{order.data.customer_name}</td></tr>
+						{items.length > 0 && (
+							<tr><th>Items</th><td>
+								<ul>
+									{items.map((it) => <li>{it.quantity} × {it.product} — ${(it.unit_price * it.quantity).toFixed(2)}</li>)}
+								</ul>
+							</td></tr>
+						)}
+						<tr><th>Total</th><td><strong>${total}</strong> (cash on pickup)</td></tr>
+						<tr><th>Pickup</th><td>{locationLabel}</td></tr>
+						<tr><th>When</th><td>{String(order.data.pickup_date ?? "")}</td></tr>
+						{order.data.notes ? <tr><th>Notes</th><td>{order.data.notes}</td></tr> : null}
+					</tbody>
+				</table>
+				<p class="note">Bring cash when you collect. We'll see you then!</p>
+			</>
+		) : (
+			<p>We couldn't find that order. If you think this is a mistake, contact us.</p>
+		)}
+		<p><a href="/products">← Back to the menu</a></p>
+	</section>
+</Base>
+
+<style>
+	.confirm { max-width: 560px; }
+	.ref { color: var(--muted); }
+	.ref code { background: var(--bg-alt); padding: 0.1rem 0.4rem; border-radius: 4px; }
+	.summary { width: 100%; border-collapse: collapse; }
+	.summary th { text-align: left; width: 8rem; vertical-align: top; color: var(--muted); font-weight: 600; padding: 0.5rem 1rem 0.5rem 0; border-top: 1px solid var(--border); }
+	.summary td { padding: 0.5rem 0; border-top: 1px solid var(--border); }
+	.summary ul { margin: 0; padding-left: 1.1rem; }
+	.note { margin-top: 1.5rem; font-weight: 600; }
+</style>

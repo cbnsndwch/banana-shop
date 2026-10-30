@@ -1,0 +1,61 @@
+---
+import { Image } from "emdash/ui";
+import type { ContentEntry } from "emdash";
+
+interface Props {
+	product: ContentEntry<any>;
+}
+const { product } = Astro.props;
+const price = product.data.price?.toFixed(2) ?? "—";
+---
+
+<article class="card">
+	{product.data.featured_image ? (
+		<a href={`/products/${product.id}`} {...product.edit.featured_image}>
+			<Image image={product.data.featured_image} alt={product.data.featured_image.alt ?? product.data.title} />
+		</a>
+	) : (
+		<a href={`/products/${product.id}`} class="img-placeholder" aria-label={product.data.title}></a>
+	)}
+	<div class="card-body">
+		<h3 {...product.edit.title}>
+			<a href={`/products/${product.id}`}>{product.data.title}</a>
+		</h3>
+		{product.data.summary && <p {...product.edit.summary}>{product.data.summary}</p>}
+		<div class="card-foot">
+			<span class="price">${price} <span class="unit">/ {product.data.unit ?? "ea"}</span></span>
+			<a class="add" href={`/order?product=${product.id}`}>Add to order →</a>
+		</div>
+	</div>
+</article>
+
+<style>
+	.card {
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: #fff;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	.card :global(img) { width: 100%; height: 200px; object-fit: cover; display: block; }
+	.img-placeholder {
+		display: block;
+		width: 100%;
+		height: 200px;
+		background: var(--bg-alt);
+	}
+	.card-body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+	.card-body h3 { margin: 0; font-size: 1.1rem; }
+	.card-body h3 a { color: var(--fg); }
+	.card-body p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+	.card-foot {
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.price { font-weight: 700; color: var(--fg); }
+	.unit { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+	.add { font-weight: 600; font-size: 0.9rem; }
+</style>

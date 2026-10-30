@@ -1,0 +1,31 @@
+{
+  "name": "hack-night-demo",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler dev",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "seed:validate": "emdash seed seed/seed.json --validate"
+  },
+  "dependencies": {
+    "astro": "^7.4.4",
+    "@astrojs/cloudflare": "^14.4.3",
+    "@astrojs/react": "^6.0.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "emdash": "^1.4.0",
+    "@emdash-cms/cloudflare": "^1.4.0",
+    "catalog-manager": "file:./catalog-manager"
+  },
+  "devDependencies": {
+    "wrangler": "^4.156.0",
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@cloudflare/workers-types": "^4.20251001.0"
+  }
+}

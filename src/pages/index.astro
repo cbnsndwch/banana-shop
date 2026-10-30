@@ -1,0 +1,62 @@
+---
+import { getEmDashCollection } from "emdash";
+import { Image } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import ProductCard from "../components/ProductCard.astro";
+
+const { entries: products, cacheHint } = await getEmDashCollection("products", {
+	status: "published",
+	where: { available: true },
+	orderBy: { published_at: "desc" },
+	limit: 12,
+});
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const featured = products.slice(0, 3);
+---
+
+<Base title="Home">
+	<section class="hero">
+		<h1>Hack Night Bakery</h1>
+		<p>Small-batch banana bread and granola, baked fresh for hack night. Order ahead, pay cash on pickup.</p>
+		<div class="hero-cta">
+			<a class="btn" href="/products">Browse the menu</a>
+			<a class="btn ghost" href="/order">Start an order →</a>
+		</div>
+	</section>
+
+	<section>
+		<h2>Fresh this week</h2>
+		{featured.length === 0 ? (
+			<p class="empty">No products yet — add some in the admin catalog manager.</p>
+		) : (
+			<div class="grid">
+				{featured.map((p) => <ProductCard product={p} />)}
+			</div>
+		)}
+	</section>
+</Base>
+
+<style>
+	.hero { text-align: center; padding: 3rem 1rem 2rem; }
+	.hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 0.5rem; }
+	.hero p { max-width: 38rem; margin: 0 auto 1.5rem; color: var(--muted); font-size: 1.1rem; }
+	.hero-cta { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+	.btn {
+		display: inline-block;
+		padding: 0.65rem 1.3rem;
+		border-radius: 999px;
+		font-weight: 600;
+		background: var(--accent);
+		color: #fff;
+	}
+	.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+	.btn:hover { text-decoration: none; opacity: 0.92; }
+	h2 { margin: 2.5rem 0 1rem; }
+	.grid {
+		display: grid;
+		gap: 1.25rem;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	}
+	.empty { color: var(--muted); }
+</style>
