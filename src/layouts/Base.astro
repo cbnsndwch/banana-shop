@@ -19,11 +19,13 @@ const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle;
 const pageDescription = description ?? settings?.tagline ?? "";
 
 const pageCtx = createPublicPageContext({
+	Astro,
 	kind: content ? "content" : "custom",
 	title: pageTitle,
 	pageTitle: title ?? null,
 	description: pageDescription,
 	siteName: siteTitle,
+	siteUrl: Astro.url.origin,
 	content,
 });
 
@@ -43,7 +45,7 @@ const items = menu?.items ?? [];
 		<meta name="generator" content={Astro.generator} />
 		<title>{pageTitle}</title>
 		<meta name="description" content={pageDescription} />
-		<EmDashHead context={pageCtx} />
+		<EmDashHead page={pageCtx} />
 	</head>
 	<body>
 		<header class="site-header">

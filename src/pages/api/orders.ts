@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
 				},
 				status: "published",
 			});
-			if ((created as any).error) throw new Error(`create failed: ${(created as any).error}`);
+			if ((created as any).error) throw new Error(`create failed: ${JSON.stringify((created as any).error)}`);
 			const createdId = (created as any).data?.id;
 			if (!createdId) throw new Error("create returned no id");
 			// Publish so the order shows immediately in the admin.

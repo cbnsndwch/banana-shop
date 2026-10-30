@@ -9,7 +9,9 @@
     "preview": "wrangler dev",
     "deploy": "astro build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "seed:validate": "emdash seed seed/seed.json --validate"
+    "seed:validate": "emdash seed seed/seed.json --validate",
+    "build:preview": "CLOUDFLARE_ENV=preview astro build",
+    "deploy:preview": "CLOUDFLARE_ENV=preview astro build && wrangler versions upload"
   },
   "dependencies": {
     "astro": "^7.4.4",

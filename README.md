@@ -22,7 +22,7 @@ night demo.
 ├── src/
 │   ├── worker.ts           # Cloudflare Worker entry (scheduled handler)
 │   ├── live.config.ts      # EmDash live collections boilerplate
-│   ├── layouts/ layouts/Base.astro
+│   ├── layouts/Base.astro
 │   └── pages/              # storefront, order form, /api/orders, confirmation
 └── catalog-manager/        # sandboxed plugin: friendly product catalog UI
     └── src/plugin.ts
@@ -43,32 +43,53 @@ npx emdash seed seed/seed.json --validate
 
 ## Deploy
 
-1. Provision resources (cbnsndwch account):
-   ```sh
-   npx wrangler d1 create hack-night-demo
-   npx wrangler r2 bucket create hack-night-demo-media   # enable R2 in dashboard first
-   ```
-   Put the D1 `database_id` into `wrangler.jsonc`.
+| Branch | Worker | URL | D1 / R2 |
+| --- | --- | --- | --- |
+| `main` | `hack-night-demo` | https://banana-shop.cbnsndwch.dev (custom domain) | `hack-night-demo` / `hack-night-demo-media` |
+| any other | `hack-night-demo-preview` | `https://<branch>-hack-night-demo-preview.<subdomain>.workers.dev` | `hack-night-demo-preview` / `hack-night-demo-preview-media` |
 
-2. Set Worker secrets:
-   ```sh
-   npx emdash secrets generate   # → EMDASH_ENCRYPTION_KEY
-   openssl rand -hex 32          # → EMDASH_AUTH_SECRET
-   npx wrangler secret put EMDASH_ENCRYPTION_KEY
-   npx wrangler secret put EMDASH_AUTH_SECRET
-   ```
+The D1 databases and R2 buckets already exist on the cbnsndwch account. Previews
+use separate storage, so test orders never reach production.
 
-3. Build & deploy:
-   ```sh
-   pnpm build
-   npx wrangler deploy           # main → workers.dev subdomain
-   ```
+The Astro Cloudflare adapter flattens `wrangler.jsonc` into
+`dist/server/wrangler.json` at build time. It picks the env from `CLOUDFLARE_ENV`,
+so set that before building and **don't** pass `--env` to wrangler afterwards.
 
-## Branch previews
+### One-time bootstrap
 
-Non-`main` branches deploy to random `*.workers.dev` subdomains via the
-`[env.preview]` in `wrangler.jsonc` (`wrangler deploy --env preview`), or wire
-Wrangler's GitHub integration for automatic branch previews.
+Both Workers need to exist (and have secrets) before the CI builds can deploy them:
+
+```sh
+# production
+npx wrangler secret put EMDASH_ENCRYPTION_KEY   # value: npx emdash secrets generate
+npx wrangler secret put EMDASH_AUTH_SECRET      # value: openssl rand -hex 32
+pnpm deploy                                     # creates the Worker + custom domain
+
+# preview Worker
+CLOUDFLARE_ENV=preview pnpm build && npx wrangler deploy
+npx wrangler secret put EMDASH_ENCRYPTION_KEY --name hack-night-demo-preview
+npx wrangler secret put EMDASH_AUTH_SECRET    --name hack-night-demo-preview
+```
+
+### Wire Workers Builds (Dashboard → Workers → *worker* → Settings → Builds → Connect)
+
+Connect **both** Workers to `cbnsndwch/banana-shop`:
+
+**`hack-night-demo`** (production)
+- Production branch: `main`
+- Build command: `pnpm build`
+- Deploy command: `npx wrangler deploy`
+- Builds for non-production branches: **off**
+
+**`hack-night-demo-preview`** (branch previews)
+- Production branch: `main` (any value works; this Worker only uploads versions)
+- Build variable: `CLOUDFLARE_ENV=preview`
+- Build command: `pnpm build`
+- Deploy command: `npx wrangler versions upload`
+- Builds for non-production branches: **on**, with deploy command `npx wrangler versions upload`
+
+Each push to a non-`main` branch uploads a version with a branch-named preview
+alias, and the bot comments the URL on the PR. Run it by hand with `pnpm deploy:preview`.
 
 > **Note:** The sandboxed catalog-manager plugin needs the Worker Loader
 > (`worker_loaders: [{ "binding": "LOADER" }]`) binding, which requires a

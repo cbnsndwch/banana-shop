@@ -16,15 +16,60 @@
 			"slug": "products",
 			"label": "Products",
 			"labelSingular": "Product",
-			"supports": ["drafts", "search", "seo"],
+			"supports": [
+				"drafts",
+				"search",
+				"seo"
+			],
 			"fields": [
-				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
-				{ "slug": "summary", "label": "Summary", "type": "text", "searchable": true },
-				{ "slug": "description", "label": "Description", "type": "portableText", "searchable": true },
-				{ "slug": "price", "label": "Price (USD)", "type": "number", "required": true },
-				{ "slug": "unit", "label": "Unit", "type": "select", "validation": { "options": ["loaf", "jar", "bag"], "default": "loaf" } },
-				{ "slug": "featured_image", "label": "Featured Image", "type": "image" },
-				{ "slug": "available", "label": "Available", "type": "boolean" }
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "description",
+					"label": "Description",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "price",
+					"label": "Price (USD)",
+					"type": "number",
+					"required": true
+				},
+				{
+					"slug": "unit",
+					"label": "Unit",
+					"type": "select",
+					"validation": {
+						"options": [
+							"loaf",
+							"jar",
+							"bag"
+						],
+						"default": "loaf"
+					}
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "available",
+					"label": "Available",
+					"type": "boolean"
+				}
 			]
 		},
 		{
@@ -33,16 +78,44 @@
 			"labelSingular": "Order",
 			"supports": [],
 			"fields": [
-				{ "slug": "customer_name", "label": "Customer Name", "type": "string", "required": true },
-				{ "slug": "customer_email", "label": "Customer Email", "type": "string" },
-				{ "slug": "customer_phone", "label": "Customer Phone", "type": "string" },
-				{ "slug": "pickup_name", "label": "Pickup Name", "type": "string" },
-				{ "slug": "pickup_date", "label": "Pickup Date/Time", "type": "datetime", "required": true },
+				{
+					"slug": "customer_name",
+					"label": "Customer Name",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "customer_email",
+					"label": "Customer Email",
+					"type": "string"
+				},
+				{
+					"slug": "customer_phone",
+					"label": "Customer Phone",
+					"type": "string"
+				},
+				{
+					"slug": "pickup_name",
+					"label": "Pickup Name",
+					"type": "string"
+				},
+				{
+					"slug": "pickup_date",
+					"label": "Pickup Date/Time",
+					"type": "datetime",
+					"required": true
+				},
 				{
 					"slug": "pickup_location",
 					"label": "Pickup Location",
 					"type": "select",
-					"validation": { "options": ["kitchen", "market-stall"], "default": "kitchen" }
+					"validation": {
+						"options": [
+							"kitchen",
+							"market-stall"
+						],
+						"default": "kitchen"
+					}
 				},
 				{
 					"slug": "items",
@@ -50,25 +123,63 @@
 					"type": "repeater",
 					"validation": {
 						"subFields": [
-							{ "slug": "product", "label": "Product", "type": "string", "required": true },
-							{ "slug": "quantity", "label": "Quantity", "type": "integer", "required": true },
-							{ "slug": "unit_price", "label": "Unit Price", "type": "number", "required": true }
+							{
+								"slug": "product",
+								"label": "Product",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "quantity",
+								"label": "Quantity",
+								"type": "integer",
+								"required": true
+							},
+							{
+								"slug": "unit_price",
+								"label": "Unit Price",
+								"type": "number",
+								"required": true
+							}
 						]
 					}
 				},
-				{ "slug": "total", "label": "Total (USD)", "type": "number", "required": true },
-				{ "slug": "notes", "label": "Notes", "type": "text" },
+				{
+					"slug": "total",
+					"label": "Total (USD)",
+					"type": "number",
+					"required": true
+				},
+				{
+					"slug": "notes",
+					"label": "Notes",
+					"type": "text"
+				},
 				{
 					"slug": "payment_method",
 					"label": "Payment Method",
 					"type": "select",
-					"validation": { "options": ["cash-on-pickup"], "default": "cash-on-pickup" }
+					"validation": {
+						"options": [
+							"cash-on-pickup"
+						],
+						"default": "cash-on-pickup"
+					}
 				},
 				{
 					"slug": "order_status",
 					"label": "Order Status",
 					"type": "select",
-					"validation": { "options": ["new", "confirmed", "ready", "picked-up", "cancelled"], "default": "new" }
+					"validation": {
+						"options": [
+							"new",
+							"confirmed",
+							"ready",
+							"picked-up",
+							"cancelled"
+						],
+						"default": "new"
+					}
 				}
 			]
 		}
@@ -79,10 +190,18 @@
 			"label": "Categories",
 			"labelSingular": "Category",
 			"hierarchical": false,
-			"collections": ["products"],
+			"collections": [
+				"products"
+			],
 			"terms": [
-				{ "slug": "banana-bread", "label": "Banana Bread" },
-				{ "slug": "granola", "label": "Granola" }
+				{
+					"slug": "banana-bread",
+					"label": "Banana Bread"
+				},
+				{
+					"slug": "granola",
+					"label": "Granola"
+				}
 			]
 		}
 	],
@@ -91,11 +210,31 @@
 			"name": "primary",
 			"label": "Primary Navigation",
 			"items": [
-				{ "type": "custom", "label": "Home", "url": "/" },
-				{ "type": "custom", "label": "Banana Breads", "url": "/products?category=banana-bread" },
-				{ "type": "custom", "label": "Granola", "url": "/products?category=granola" },
-				{ "type": "custom", "label": "How to Order", "url": "/how-to-order" },
-				{ "type": "custom", "label": "Contact", "url": "/contact" }
+				{
+					"type": "custom",
+					"label": "Home",
+					"url": "/"
+				},
+				{
+					"type": "custom",
+					"label": "Banana Breads",
+					"url": "/products?category=banana-bread"
+				},
+				{
+					"type": "custom",
+					"label": "Granola",
+					"url": "/products?category=granola"
+				},
+				{
+					"type": "custom",
+					"label": "How to Order",
+					"url": "/how-to-order"
+				},
+				{
+					"type": "custom",
+					"label": "Contact",
+					"url": "/contact"
+				}
 			]
 		}
 	],
@@ -107,31 +246,38 @@
 				"status": "published",
 				"data": {
 					"title": "Classic Banana Bread",
-					"summary": "Our original loaf — ripe bananas, brown sugar, a hint of vanilla. Dense, moist, deeply banana.",
+					"summary": "Our original loaf \u2014 ripe bananas, brown sugar, a hint of vanilla. Dense, moist, deeply banana.",
 					"description": [
 						{
 							"_type": "block",
 							"style": "normal",
-							"children": [{ "_type": "span", "text": "The loaf that started the bakery. We let the bananas go black and jammy, fold in brown sugar and a splash of vanilla, and bake it low and slow so the crust caramelizes while the crumb stays moist for days." }]
+							"children": [
+								{
+									"_type": "span",
+									"text": "The loaf that started the bakery. We let the bananas go black and jammy, fold in brown sugar and a splash of vanilla, and bake it low and slow so the crust caramelizes while the crumb stays moist for days."
+								}
+							]
 						},
 						{
 							"_type": "block",
 							"style": "normal",
-							"children": [{ "_type": "span", "text": "Best eaten slightly warm, with salted butter. Keeps 4 days on the counter, 2 weeks frozen." }]
+							"children": [
+								{
+									"_type": "span",
+									"text": "Best eaten slightly warm, with salted butter. Keeps 4 days on the counter, 2 weeks frozen."
+								}
+							]
 						}
 					],
 					"price": 8.0,
 					"unit": "loaf",
-					"featured_image": {
-						"$media": {
-							"url": "https://images.unsplash.com/photo-1605478372349-50e8f08c8633?w=1200&h=800&fit=crop",
-							"alt": "A slice of classic banana bread on a plate",
-							"filename": "classic-banana-bread.jpg"
-						}
-					},
 					"available": true
 				},
-				"taxonomies": { "category": ["banana-bread"] }
+				"taxonomies": {
+					"category": [
+						"banana-bread"
+					]
+				}
 			},
 			{
 				"id": "product-chocolate-chunk-banana-bread",
@@ -144,21 +290,23 @@
 						{
 							"_type": "block",
 							"style": "normal",
-							"children": [{ "_type": "span", "text": "Same banana base as the classic, folded with 70% dark chocolate chunks that melt into pockets. Less sweet than you'd expect — the chocolate balances the banana." }]
+							"children": [
+								{
+									"_type": "span",
+									"text": "Same banana base as the classic, folded with 70% dark chocolate chunks that melt into pockets. Less sweet than you'd expect \u2014 the chocolate balances the banana."
+								}
+							]
 						}
 					],
 					"price": 9.0,
 					"unit": "loaf",
-					"featured_image": {
-						"$media": {
-							"url": "https://images.unsplash.com/photo-1605478372271-66e1c76e3e29?w=1200&h=800&fit=crop",
-							"alt": "Chocolate chunk banana bread loaf",
-							"filename": "chocolate-chunk-banana-bread.jpg"
-						}
-					},
 					"available": true
 				},
-				"taxonomies": { "category": ["banana-bread"] }
+				"taxonomies": {
+					"category": [
+						"banana-bread"
+					]
+				}
 			},
 			{
 				"id": "product-maple-pecan-granola",
@@ -171,21 +319,23 @@
 						{
 							"_type": "block",
 							"style": "normal",
-							"children": [{ "_type": "span", "text": "Rolled oats and pecans baked in real maple syrup with a pinch of sea salt and cinnamon. We bake it in big sheets and break it into chunky clusters. Eat it dry, or with yogurt and fruit." }]
+							"children": [
+								{
+									"_type": "span",
+									"text": "Rolled oats and pecans baked in real maple syrup with a pinch of sea salt and cinnamon. We bake it in big sheets and break it into chunky clusters. Eat it dry, or with yogurt and fruit."
+								}
+							]
 						}
 					],
 					"price": 11.0,
 					"unit": "jar",
-					"featured_image": {
-						"$media": {
-							"url": "https://images.unsplash.com/photo-1568254183919-78a777f1f046?w=1200&h=800&fit=crop",
-							"alt": "A jar of maple pecan granola",
-							"filename": "maple-pecan-granola.jpg"
-						}
-					},
 					"available": true
 				},
-				"taxonomies": { "category": ["granola"] }
+				"taxonomies": {
+					"category": [
+						"granola"
+					]
+				}
 			},
 			{
 				"id": "product-cocoa-almond-granola",
@@ -198,21 +348,23 @@
 						{
 							"_type": "block",
 							"style": "normal",
-							"children": [{ "_type": "span", "text": "Dutch cocoa and sliced almonds, bound with coconut oil and a little brown sugar. Deeply chocolatey with a satisfying crunch. Excellent on ice cream." }]
+							"children": [
+								{
+									"_type": "span",
+									"text": "Dutch cocoa and sliced almonds, bound with coconut oil and a little brown sugar. Deeply chocolatey with a satisfying crunch. Excellent on ice cream."
+								}
+							]
 						}
 					],
 					"price": 12.0,
 					"unit": "bag",
-					"featured_image": {
-						"$media": {
-							"url": "https://images.unsplash.com/photo-1596591868281-3c4e44f8b3be?w=1200&h=800&fit=crop",
-							"alt": "Cocoa almond granola in a bowl",
-							"filename": "cocoa-almond-granola.jpg"
-						}
-					},
 					"available": true
 				},
-				"taxonomies": { "category": ["granola"] }
+				"taxonomies": {
+					"category": [
+						"granola"
+					]
+				}
 			}
 		]
 	}

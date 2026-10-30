@@ -1,6 +1,14 @@
 {
-	// EmDash site on Cloudflare Workers (D1 + R2).
-	// `name` is also the Worker name. Provision D1/R2 and fill `database_id` below.
+	// EmDash site on Cloudflare Workers (D1 + R2), account: cbnsndwch.
+	//
+	// Production (main branch):  `pnpm build && wrangler deploy`
+	//   → https://banana-shop.cbnsndwch.dev (custom domain on the cbnsndwch.dev zone)
+	// Previews (any other branch): `CLOUDFLARE_ENV=preview pnpm build && wrangler versions upload`
+	//   → https://<branch>-hack-night-demo-preview.<account-subdomain>.workers.dev
+	//   Separate Worker, D1 and R2 so previews never touch production orders.
+	//
+	// The Astro Cloudflare adapter flattens the selected env into dist/server/wrangler.json
+	// at build time (selected via CLOUDFLARE_ENV), so don't pass `--env` to wrangler after building.
 	"name": "hack-night-demo",
 	"main": "./src/worker.ts",
 	"account_id": "2762e11135a6c3145300ccb70c44ae81",
@@ -9,6 +17,10 @@
 
 	// Astro Cloudflare build output (server + assets).
 	"assets": { "directory": "./dist" },
+
+	"routes": [{ "pattern": "banana-shop.cbnsndwch.dev", "custom_domain": true }],
+	"workers_dev": false,
+	"preview_urls": false,
 
 	"d1_databases": [
 		{
@@ -23,6 +35,7 @@
 			"bucket_name": "hack-night-demo-media"
 		}
 	],
+	"vars": { "EMDASH_SITE_URL": "https://banana-shop.cbnsndwch.dev" },
 
 	// Scheduled publishing + maintenance sweep (1/min).
 	"triggers": { "crons": ["* * * * *"] },
@@ -31,16 +44,28 @@
 	// isolated isolate. Requires a Workers paid plan.
 	"worker_loaders": [{ "binding": "LOADER" }],
 
-	// Main branch deploys to the account's workers.dev subdomain.
-	// Switch to a custom hostname later by adding a "custom_domains" entry on a zone
-	// the cbnsndwch account owns, e.g. "custom_domains": ["hack-night.cbnsndwch.dev"].
-	"workers_dev": true,
-
-	// Preview environment for non-main branches: random *.workers.dev subdomain per branch.
 	"env": {
+		// Bindings/vars/routes are not inherited by envs, so they're all restated here.
 		"preview": {
 			"name": "hack-night-demo-preview",
+			"routes": [],
 			"workers_dev": true,
+			"preview_urls": true,
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "hack-night-demo-preview",
+					"database_id": "78420ecd-b84c-4762-855d-bef8eae8ebe0"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "MEDIA",
+					"bucket_name": "hack-night-demo-preview-media"
+				}
+			],
+			"vars": {},
+			"triggers": { "crons": ["* * * * *"] },
 			"worker_loaders": [{ "binding": "LOADER" }]
 		}
 	}
