@@ -29,7 +29,7 @@ export default defineConfig({
 			],
 			sandboxRunner: sandbox(),
 			// Set to the public origin once deployed (also accepted via EMDASH_SITE_URL env).
-			// siteUrl: "https://hack-night-demo.<subdomain>.workers.dev",
+			// Production origin comes from EMDASH_SITE_URL (wrangler.jsonc vars); previews use the request origin.
 		}),
 	],
 	devToolbar: { enabled: false },

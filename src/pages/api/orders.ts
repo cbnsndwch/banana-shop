@@ -30,7 +30,9 @@ export const POST: APIRoute = async ({ request }) => {
 	const customer_email = typeof b.customer_email === "string" ? b.customer_email.trim() : "";
 	const customer_phone = typeof b.customer_phone === "string" ? b.customer_phone.trim() : "";
 	const pickup_name = typeof b.pickup_name === "string" ? b.pickup_name.trim() : "";
-	const pickup_date = typeof b.pickup_date === "string" ? b.pickup_date : "";
+	// <input type="datetime-local"> sends "YYYY-MM-DDTHH:mm"; EmDash datetime fields want full ISO.
+	const pickupMs = typeof b.pickup_date === "string" ? Date.parse(b.pickup_date) : NaN;
+	const pickup_date = Number.isNaN(pickupMs) ? "" : new Date(pickupMs).toISOString();
 	const pickup_location = typeof b.pickup_location === "string" ? b.pickup_location : "";
 	const notes = typeof b.notes === "string" ? b.notes : "";
 	const rawItems = Array.isArray(b.items) ? b.items : [];
@@ -82,10 +84,12 @@ export const POST: APIRoute = async ({ request }) => {
 					payment_method: "cash-on-pickup",
 					order_status: "new",
 				},
+				// Published content needs a slug; orders aren't public pages, so any unique value works.
+				slug: `order-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`,
 				status: "published",
 			});
 			if ((created as any).error) throw new Error(`create failed: ${JSON.stringify((created as any).error)}`);
-			const createdId = (created as any).data?.id;
+			const createdId = (created as any).data?.item?.id;
 			if (!createdId) throw new Error("create returned no id");
 			// Publish so the order shows immediately in the admin.
 			await runtime.handleContentPublish("orders", createdId);

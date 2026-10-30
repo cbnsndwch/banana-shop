@@ -161,7 +161,8 @@ if (prefillSlug) {
 			customer_phone: fd.get("customer_phone"),
 			customer_email: fd.get("customer_email"),
 			pickup_name: fd.get("pickup_name"),
-			pickup_date: fd.get("pickup_date"),
+			// datetime-local has no timezone; convert in the browser so the shop gets the customer's local time.
+			pickup_date: new Date(String(fd.get("pickup_date"))).toISOString(),
 			pickup_location: fd.get("pickup_location"),
 			notes: fd.get("notes"),
 			items,
